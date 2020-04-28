@@ -8,7 +8,7 @@ Page({
     wx.showLoading({
       title: "加载中",
     });
-    const res = await api.getData(app.globalData.openid, id);
+    const res = await api.getData(id);
     wx.hideLoading();
     if (res) {
       //do something
@@ -19,7 +19,7 @@ Page({
     wx.showLoading({
       title: "加载中",
     });
-    const res = await api.getData(app.globalData.openid, id);
+    const res = await api.getData(id);
     wx.hideLoading();
     if (res.rescode === "9001") {
       //do something

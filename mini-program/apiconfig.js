@@ -1,7 +1,29 @@
-//区分环境
+let ip = `https://api..com`;
+const ips = ["https://test.api.com", "https://api.com"];
+/**
+ *
+ * @param {string} method 请求方法
+ * @param {Boolean} showError 是否在小程序页面显示错误提示
+ * @param {Boolean} noAuth 是否携带权限认证
+ */
 
-let ip = `https://api.com`;
-function handleRequest(method, { url, data }) {
+function handleRequest(method, { path, data = {}, showError = true, noAuth }) {
+  const app = getApp();
+  const openid = app.globalData.openid;
+  let url = "";
+  if (wx.getStorageSync("nowenv") !== "pro") {
+    ip = ips[0];
+  } else {
+    ip = ips[1];
+  }
+  url = ip + path;
+  if (!noAuth) {
+    if (path.includes("?")) {
+      url += `&openid=${openid}`;
+    } else {
+      url += `?openid=${openid}`;
+    }
+  }
   return new Promise(function (resolve, reject) {
     if (wx.getStorageSync("nowenv") !== "pro") {
       ip = "https://test.api.com";
@@ -12,10 +34,7 @@ function handleRequest(method, { url, data }) {
       url: ip + url,
       data,
       method,
-      header: {
-        "content-type": "application/json",
-        token: " ",
-      },
+      header: {},
       success: function (res) {
         if (res.data.code === "200") {
           //兼容后端没有返回值的接口
@@ -29,11 +48,16 @@ function handleRequest(method, { url, data }) {
           resolve(res.data.data);
         } else {
           //请求失败，显示原因
-          wx.showToast({
-            title: res.data.desc,
-            icon: "none",
-            duration: 1000,
-          });
+          if (showError) {
+            wx.showToast({
+              title: res.data.desc,
+              icon: "none",
+              duration: 1000,
+            });
+          } else {
+            console.log("error code：" + res.data.code);
+            console.log("error desc：" + res.data.desc);
+          }
           resolve(false);
         }
       },
@@ -62,7 +86,7 @@ function del(params) {
 }
 
 export default {
-  ip,
+  ips,
   get,
   post,
   del,
